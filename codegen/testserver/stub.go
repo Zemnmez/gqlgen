@@ -64,6 +64,7 @@ type Stub struct {
 		DirectiveField                   func(ctx context.Context) (*string, error)
 		DirectiveDouble                  func(ctx context.Context) (*string, error)
 		DirectiveUnimplemented           func(ctx context.Context) (*string, error)
+		GetExtendedInterface             func(ctx context.Context) (InterfaceExtensionTest, error)
 		MapStringInterface               func(ctx context.Context, in map[string]interface{}) (map[string]interface{}, error)
 		ErrorBubble                      func(ctx context.Context) (*Error, error)
 		Errors                           func(ctx context.Context) (*Errors, error)
@@ -259,6 +260,9 @@ func (r *stubQuery) DirectiveDouble(ctx context.Context) (*string, error) {
 }
 func (r *stubQuery) DirectiveUnimplemented(ctx context.Context) (*string, error) {
 	return r.QueryResolver.DirectiveUnimplemented(ctx)
+}
+func (r *stubQuery) GetExtendedInterface(ctx context.Context) (InterfaceExtensionTest, error) {
+	return r.QueryResolver.GetExtendedInterface(ctx)
 }
 func (r *stubQuery) MapStringInterface(ctx context.Context, in map[string]interface{}) (map[string]interface{}, error) {
 	return r.QueryResolver.MapStringInterface(ctx, in)

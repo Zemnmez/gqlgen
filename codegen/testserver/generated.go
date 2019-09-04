@@ -225,6 +225,7 @@ type ComplexityRoot struct {
 		ErrorBubble                      func(childComplexity int) int
 		Errors                           func(childComplexity int) int
 		Fallback                         func(childComplexity int, arg FallbackToStringEncoding) int
+		GetExtendedInterface             func(childComplexity int) int
 		InputSlice                       func(childComplexity int, arg []string) int
 		InvalidIdentifier                func(childComplexity int) int
 		MapInput                         func(childComplexity int, input map[string]interface{}) int
@@ -359,6 +360,7 @@ type QueryResolver interface {
 	DirectiveField(ctx context.Context) (*string, error)
 	DirectiveDouble(ctx context.Context) (*string, error)
 	DirectiveUnimplemented(ctx context.Context) (*string, error)
+	GetExtendedInterface(ctx context.Context) (InterfaceExtensionTest, error)
 	MapStringInterface(ctx context.Context, in map[string]interface{}) (map[string]interface{}, error)
 	ErrorBubble(ctx context.Context) (*Error, error)
 	Errors(ctx context.Context) (*Errors, error)
@@ -938,6 +940,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Fallback(childComplexity, args["arg"].(FallbackToStringEncoding)), true
 
+	case "Query.getExtendedInterface":
+		if e.complexity.Query.GetExtendedInterface == nil {
+			break
+		}
+
+		return e.complexity.Query.GetExtendedInterface(childComplexity), true
+
 	case "Query.inputSlice":
 		if e.complexity.Query.InputSlice == nil {
 			break
@@ -1441,6 +1450,16 @@ type ObjectDirectivesWithCustomGoModel {
     nullableText: String @toNull
 }
 `},
+	&ast.Source{Name: "extend_interface_1.graphql", Input: `interface Interface_extension_test {
+    B: String!
+}
+
+extend type Query {
+    getExtendedInterface: Interface_extension_test
+}`},
+	&ast.Source{Name: "extend_interface_2.graphql", Input: `extend interface Interface_extension_test {
+    C: String!
+}`},
 	&ast.Source{Name: "loops.graphql", Input: `type LoopA {
     b: LoopB!
 }
@@ -5376,6 +5395,37 @@ func (ec *executionContext) _Query_directiveUnimplemented(ctx context.Context, f
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getExtendedInterface(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetExtendedInterface(rctx)
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(InterfaceExtensionTest)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOInterface_extension_test2githubᚗcomᚋ99designsᚋgqlgenᚋcodegenᚋtestserverᚐInterfaceExtensionTest(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_mapStringInterface(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -8131,6 +8181,15 @@ func (ec *executionContext) _Content_Child(ctx context.Context, sel ast.Selectio
 	}
 }
 
+func (ec *executionContext) _Interface_extension_test(ctx context.Context, sel ast.SelectionSet, obj *InterfaceExtensionTest) graphql.Marshaler {
+	switch obj := (*obj).(type) {
+	case nil:
+		return graphql.Null
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _Shape(ctx context.Context, sel ast.SelectionSet, obj *Shape) graphql.Marshaler {
 	switch obj := (*obj).(type) {
 	case nil:
@@ -9474,6 +9533,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_directiveUnimplemented(ctx, field)
+				return res
+			})
+		case "getExtendedInterface":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getExtendedInterface(ctx, field)
 				return res
 			})
 		case "mapStringInterface":
@@ -11149,6 +11219,10 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	return ec.marshalOInt2int(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOInterface_extension_test2githubᚗcomᚋ99designsᚋgqlgenᚋcodegenᚋtestserverᚐInterfaceExtensionTest(ctx context.Context, sel ast.SelectionSet, v InterfaceExtensionTest) graphql.Marshaler {
+	return ec._Interface_extension_test(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalOInvalidIdentifier2githubᚗcomᚋ99designsᚋgqlgenᚋcodegenᚋtestserverᚋinvalidᚑpackagenameᚐInvalidIdentifier(ctx context.Context, sel ast.SelectionSet, v invalid_packagename.InvalidIdentifier) graphql.Marshaler {

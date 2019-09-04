@@ -1,0 +1,7 @@
+interface Interface_extension_test {
+    B: String!
+}
+
+extend type Query {
+    getExtendedInterface: Interface_extension_test
+}

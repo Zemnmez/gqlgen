@@ -10,6 +10,8 @@ resolver:
   type: Resolver
 
 models:
+  Interface_extension_test:
+    model: "github.com/99designs/gqlgen/codegen/testserver.InterfaceExtensionTest"
   It:
     model: "github.com/99designs/gqlgen/codegen/testserver/introspection.It"
   ModelMethods:
